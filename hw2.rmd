@@ -1,0 +1,172 @@
+---
+title: "hw2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library("gapminder")
+library(reshape2)
+library(maps)
+library(ggmap)
+```
+
+
+```{r}
+data <- read.csv(file = './fec_2008-2022.csv')
+
+data <- data %>% 
+  select(-c(X))
+
+# Column with only numerical and int data type
+num_data <- data %>% 
+  select(where(is.numeric)) %>% 
+  select(-c(Cand_Office_Dist, Cand_Zip))
+
+# Convert party affiliation to number -1 to 1 to use later for visualization
+data$Cand_State <- tolower(state.name[match(data$Cand_State, state.abb)])
+
+data <- data %>% mutate(
+  Cand_Party_Affiliation_num = case_when(Cand_Party_Affiliation=="DEM" ~ 1,
+                                            Cand_Party_Affiliation=="REP" ~ -1,
+            Cand_Party_Affiliation!="REP" | Cand_Party_Affiliation!="DEM" ~ 0))
+
+
+# Check data
+str(data)
+
+
+
+```
+
+
+
+
+```{r}
+# Get correlation matrix
+corr <- cor(num_data)
+
+# Fill upper triangle to NaN values
+corr[upper.tri(corr)] <- NA
+
+# Melt to one to one dataframe
+corr <- melt(corr)
+
+# Part for sorting unused
+# group_corr <- corr %>% 
+#   drop_na() %>% 
+#   group_by(Var2) %>% 
+#   summarize(med_value= median(value))
+# 
+# group_corr
+# 
+# corr <- corr %>% 
+#   left_join(group_corr, by="Var2")
+# 
+# corr <- corr[order(corr$med_val, corr$Var2),]
+
+```
+
+
+
+```{r, fig1, fig.height = 10, fig.width = 12}
+ggplot(data=corr, aes(x=Var1, y=Var2, fill=value)) +
+  geom_tile(color="white") +
+  theme(text = element_text(size=12),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  scale_fill_gradient2(low="blue", mid="white", high="red", na.value = "grey90",
+                       limit = c(-1,1), name="Pearson Correlation")
+```
+
+```{r, fig1, fig.height = 13, fig.width = 12}
+
+# Sort by Total_Receipt and get top 50 candidates
+receipt_data = data[order(-data$Total_Receipt),]
+receipt_data = receipt_data[0:50,]
+
+ggplot(receipt_data, aes(x=reorder(Cand_Name,Total_Receipt), y=Total_Receipt)) +
+  geom_point() +
+  coord_flip() +
+  theme(text = element_text(size=13, color="black"), axis.text.y=element_text(colour="black"))
+```
+```{r}
+# Get party_ratio on each states
+party_ratio_states <- data %>%
+  group_by(Cand_State) %>%
+  summarize(party_ratio = mean(Cand_Party_Affiliation_num)) %>% 
+  select(c(Cand_State, party_ratio))
+
+head(party_ratio_states)
+```
+
+
+```{r}
+
+# Get map of united states consisting of longitude and latitude
+states_map <- map_data("state")
+
+head(states_map)
+
+map_data <- left_join(party_ratio_states , states_map, by=c("Cand_State" = "region"))
+
+head(map_data)
+
+```
+
+
+```{r}
+ggplot(map_data, aes(long, lat, group = group)) +
+  geom_polygon(aes(fill = party_ratio), color = "white") +
+    scale_fill_gradient2(limit = c(-1,1),low="blue", mid="white", high="red", 
+                         na.value = "grey90", name="Party Ratio")
+```
+
+
+```{r, fig1, fig.height = 17, fig.width = 10}
+data2 <- data %>% 
+  group_by(Cand_Party_Affiliation) %>% 
+  mutate(count=n())
+
+ggplot(data2, aes(x=reorder(Cand_Party_Affiliation, count), y=count)) +
+  geom_bar(stat="identity", fill="skyblue") +
+  coord_flip()
+```
+
+
+
+
+```{r, fig1, fig.height = 13, fig.width = 12}
+receipt_data = data[order(-data$Total_Receipt),]
+receipt_data = receipt_data[0:50,]
+
+ggplot(receipt_data, aes(x=reorder(Cand_Name,Total_Contribution), y=Total_Contribution)) +
+  geom_point() +
+  coord_flip() +
+  theme(text = element_text(size=13, color="black"), axis.text.y=element_text(colour="black"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
