@@ -1,1 +1,1 @@
-# in4matx143_hw2
+Exploratory data analysis on US politician information
