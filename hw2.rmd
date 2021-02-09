@@ -21,7 +21,7 @@ library(ggmap)
 
 
 ```{r}
-data <- read.csv(file = './fec_2008-2022.csv')
+data <- read.csv(file = './data/fec_2008-2022.csv')
 
 data <- data %>% 
   select(-c(X))
@@ -48,6 +48,7 @@ str(data)
 ```
 
 
+## Correlation
 
 
 ```{r}
@@ -86,7 +87,9 @@ ggplot(data=corr, aes(x=Var1, y=Var2, fill=value)) +
                        limit = c(-1,1), name="Pearson Correlation")
 ```
 
-```{r, fig1, fig.height = 13, fig.width = 12}
+## Candidate VS Total_Receipt
+
+```{r, fig2, fig.height = 13, fig.width = 12}
 
 # Sort by Total_Receipt and get top 50 candidates
 receipt_data = data[order(-data$Total_Receipt),]
@@ -97,6 +100,10 @@ ggplot(receipt_data, aes(x=reorder(Cand_Name,Total_Receipt), y=Total_Receipt)) +
   coord_flip() +
   theme(text = element_text(size=13, color="black"), axis.text.y=element_text(colour="black"))
 ```
+
+
+## Party Affiliation Ratio by states
+
 ```{r}
 # Get party_ratio on each states
 party_ratio_states <- data %>%
@@ -122,7 +129,7 @@ head(map_data)
 ```
 
 
-```{r}
+```{r, fig2.5, fig.height = 10, fig.width = 17}
 ggplot(map_data, aes(long, lat, group = group)) +
   geom_polygon(aes(fill = party_ratio), color = "white") +
     scale_fill_gradient2(limit = c(-1,1),low="blue", mid="white", high="red", 
@@ -130,7 +137,10 @@ ggplot(map_data, aes(long, lat, group = group)) +
 ```
 
 
-```{r, fig1, fig.height = 17, fig.width = 10}
+## Party Affiliations and their numbers
+
+
+```{r, fig3, fig.height = 17, fig.width = 10}
 data2 <- data %>% 
   group_by(Cand_Party_Affiliation) %>% 
   mutate(count=n())
@@ -139,21 +149,6 @@ ggplot(data2, aes(x=reorder(Cand_Party_Affiliation, count), y=count)) +
   geom_bar(stat="identity", fill="skyblue") +
   coord_flip()
 ```
-
-
-
-
-```{r, fig1, fig.height = 13, fig.width = 12}
-receipt_data = data[order(-data$Total_Receipt),]
-receipt_data = receipt_data[0:50,]
-
-ggplot(receipt_data, aes(x=reorder(Cand_Name,Total_Contribution), y=Total_Contribution)) +
-  geom_point() +
-  coord_flip() +
-  theme(text = element_text(size=13, color="black"), axis.text.y=element_text(colour="black"))
-```
-
-
 
 
 
