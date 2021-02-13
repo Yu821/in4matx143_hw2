@@ -9,6 +9,7 @@ library(gapminder)
 library(reshape2)
 library(maps)
 library(ggmap)
+library(lubridate)
 ```
 
 ## Loading and modifying data
@@ -108,7 +109,7 @@ num_data$Cash_On_Hand_COP[is.na(num_data$Cash_On_Hand_COP)] <- median(num_data$C
 corr <- cor(num_data)
 
 # Fill upper triangle to NaN values
-corr[upper.tri(corr)] <- NA
+corr[lower.tri(corr)] <- NA
 
 # Melt to one to one dataframe
 corr <- melt(corr)
@@ -132,8 +133,9 @@ corr <- melt(corr)
 ``` r
 ggplot(data=corr, aes(x=Var1, y=Var2, fill=value)) +
   geom_tile(color="white") +
+  scale_x_discrete(position = "top") +
   theme(text = element_text(size=12),
-        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+        axis.text.x = element_text(angle = 90, hjust=0, vjust=0.5)) +
   scale_fill_gradient2(low="blue", mid="white", high="red", na.value = "grey90",
                        limit = c(-1,1), name="Pearson Correlation")
 ```
@@ -153,10 +155,12 @@ higher than 0 correlation each other.
 receipt_data = data[order(-data$Total_Receipt),]
 receipt_data = receipt_data[0:50,]
 
-ggplot(receipt_data, aes(x=reorder(Cand_Name,Total_Receipt), y=Total_Receipt)) +
+ggplot(receipt_data, aes(x=reorder(Cand_Name,Total_Receipt), y=Total_Receipt/1000000)) +
   geom_point() +
   coord_flip() +
-  theme(text = element_text(size=13, color="black"), axis.text.y=element_text(colour="black"))
+  theme(text = element_text(size=13, color="black"), axis.text.y=element_text(colour="black"),
+        axis.title=element_text(size=14,face="bold")) +
+  labs(x="Candidate Name", y="Total Receipt in million dollars")
 ```
 
 ![](hw2_files/figure-gfm/fig2-1.png)<!-- -->
@@ -228,7 +232,8 @@ head(map_data)
 ggplot(map_data, aes(long, lat, group = group)) +
   geom_polygon(aes(fill = party_ratio), color = "white") +
     scale_fill_gradient2(limit = c(-1,1),low="blue", mid="white", high="red", 
-                         na.value = "grey90", name="Party Ratio")
+                         na.value = "grey90", name="Party Ratio") + 
+  theme(panel.background = element_rect(fill = 'grey70', colour = 'white'))
 ```
 
 ![](hw2_files/figure-gfm/fig2.5-1.png)<!-- -->
@@ -264,3 +269,69 @@ What we can see:
 2.  Majorities are either Republcan, Democratic, or Independent.
 3.  There are so many party affiliations other than Republic and
     Democratic.
+
+## Part 2
+
+Hypothesis: Interest toward US politics increased significantly in 2020
+election.
+
+``` r
+# Extract Year from date
+data$End_Year = year(as.Date(data$Coverage_End_Date, format = "%m/%d/%Y"))
+```
+
+``` r
+year_cont <- data %>% 
+  select(End_Year, Total_Contribution, Total_Disbursement)
+
+unique(year_cont$End_Year)
+```
+
+    ##  [1] 2008   NA 2007 2009 2010 2090 2011 2012 2013 2014 2016 2015 2017 2018 2019
+    ## [16] 2020 2021
+
+``` r
+year_cont <- year_cont %>% mutate(
+  End_Year= case_when(End_Year >= 2009 & End_Year <= 2012 ~ 2012,
+                      End_Year >= 2013 & End_Year <= 2016 ~ 2016,
+                      End_Year >= 2017 & End_Year <= 2020 ~ 2020))
+
+
+
+year_cont <- year_cont %>% group_by(End_Year) %>% 
+  drop_na() %>% 
+  filter(End_Year > 2008 & End_Year < 2021) %>% 
+  summarize(Sum_Contribution = sum(Total_Contribution)/1000000,
+            Sum_Disbursement = sum(Total_Disbursement)/1000000)
+```
+
+    ## `summarise()` ungrouping output (override with `.groups` argument)
+
+``` r
+year_cont <- as.data.frame(year_cont)
+
+head(year_cont)
+```
+
+    ##   End_Year Sum_Contribution Sum_Disbursement
+    ## 1     2012         4183.073         5060.868
+    ## 2     2016         4061.900         4730.819
+    ## 3     2020         9110.395        10265.873
+
+``` r
+year_cont <- melt(data=year_cont, id.vars="End_Year", measure.vars=c("Sum_Contribution", "Sum_Disbursement"))
+```
+
+``` r
+ggplot(data=year_cont, aes(x=End_Year, y=value, fill=variable)) +
+  geom_bar(stat="identity", position = "dodge") + 
+  scale_x_continuous(breaks= c(2012, 2016, 2020)) +
+  labs(x="Year", y="US dollars in One million", fill='Types')
+```
+
+![](hw2_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+Both 2012 and 2016 doesn’t look that different, but contribution and
+disbursement increased almost two times as much as those in 2012 and
+2016.This shows that public interest toward politics went much higher
+because many people donated their money to candidates.
