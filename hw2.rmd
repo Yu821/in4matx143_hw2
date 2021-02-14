@@ -97,17 +97,17 @@ Findings:
 
 ## Candidate VS Total_Receipt
 
-```{r, fig2, fig.height = 13, fig.width = 12}
+```{r, fig2, fig.height = 8, fig.width = 8}
 
 # Sort by Total_Receipt and get top 50 candidates
 receipt_data = data[order(-data$Total_Receipt),]
-receipt_data = receipt_data[0:50,]
+receipt_data = receipt_data[0:40,]
 
 ggplot(receipt_data, aes(x=reorder(Cand_Name,Total_Receipt), y=Total_Receipt/1000000)) +
   geom_point() +
   coord_flip() +
-  theme(text = element_text(size=13, color="black"), axis.text.y=element_text(colour="black"),
-        axis.title=element_text(size=14,face="bold")) +
+  theme(text = element_text(size=11, color="black"), axis.text.y=element_text(colour="black"),
+        axis.title=element_text(size=12)) +
   labs(x="Candidate Name", y="Total Receipt in million dollars")
 
 ```
@@ -148,7 +148,7 @@ head(map_data)
 ```
 
 
-```{r, fig2.5, fig.height = 10, fig.width = 17}
+```{r, fig2.5, fig.height = 6.2, fig.width = 11}
 ggplot(map_data, aes(long, lat, group = group)) +
   geom_polygon(aes(fill = party_ratio), color = "white") +
     scale_fill_gradient2(limit = c(-1,1),low="blue", mid="white", high="red", 
@@ -170,7 +170,7 @@ What we can see:
 ## Party Affiliations and their numbers
 
 
-```{r, fig3, fig.height = 9, fig.width = 6}
+```{r, fig3, fig.height = 8, fig.width = 5}
 data2 <- data %>% 
   group_by(Cand_Party_Affiliation) %>% 
   summarize(count=n())
@@ -184,7 +184,7 @@ ggplot(data2, aes(x=reorder(Cand_Party_Affiliation, count), y=count)) +
   coord_flip() +
   labs(x="") +
   ggtitle("Number of candidates in each party") +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(text=element_text(size=9), plot.title = element_text(hjust = 0.5))
 ```
 
 Type of information:
@@ -234,13 +234,13 @@ head(year_cont)
 
 
 
-```{r, fig6, fig.height = 7, fig.width = 6.5}
+```{r, fig6, fig.height = 4, fig.width = 4.5}
 ggplot(data=year_cont, aes(x=End_Year, y=Sum_Contribution)) +
   geom_bar(stat="identity", fill="steelblue") + 
   scale_x_continuous(breaks= c(2012, 2016, 2020)) +
   labs(x="Year", y="") +
   ggtitle("Individual Contribution in One million dollars") + 
-  theme(text=element_text(size=13), plot.title = element_text(hjust = 0.5))
+  theme(text=element_text(size=9), plot.title = element_text(hjust = 0.5))
   # scale_fill_discrete(labels="Individual Contribution") +
   # theme(legend.position=c(0.3, 0.8), legend.background=element_rect(fill="transparent"))
   

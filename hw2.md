@@ -140,13 +140,13 @@ higher than 0 correlation each other.
 ``` r
 # Sort by Total_Receipt and get top 50 candidates
 receipt_data = data[order(-data$Total_Receipt),]
-receipt_data = receipt_data[0:50,]
+receipt_data = receipt_data[0:40,]
 
 ggplot(receipt_data, aes(x=reorder(Cand_Name,Total_Receipt), y=Total_Receipt/1000000)) +
   geom_point() +
   coord_flip() +
-  theme(text = element_text(size=13, color="black"), axis.text.y=element_text(colour="black"),
-        axis.title=element_text(size=14,face="bold")) +
+  theme(text = element_text(size=11, color="black"), axis.text.y=element_text(colour="black"),
+        axis.title=element_text(size=12)) +
   labs(x="Candidate Name", y="Total Receipt in million dollars")
 ```
 
@@ -252,7 +252,7 @@ ggplot(data2, aes(x=reorder(Cand_Party_Affiliation, count), y=count)) +
   coord_flip() +
   labs(x="") +
   ggtitle("Number of candidates in each party") +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(text=element_text(size=9), plot.title = element_text(hjust = 0.5))
 ```
 
 ![](hw2_files/figure-gfm/fig3-1.png)<!-- -->
@@ -327,7 +327,7 @@ ggplot(data=year_cont, aes(x=End_Year, y=Sum_Contribution)) +
   scale_x_continuous(breaks= c(2012, 2016, 2020)) +
   labs(x="Year", y="") +
   ggtitle("Individual Contribution in One million dollars") + 
-  theme(text=element_text(size=13), plot.title = element_text(hjust = 0.5))
+  theme(text=element_text(size=9), plot.title = element_text(hjust = 0.5))
 ```
 
 ![](hw2_files/figure-gfm/fig6-1.png)<!-- -->
