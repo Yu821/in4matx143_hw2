@@ -97,7 +97,7 @@ Findings:
 
 ## Candidate VS Total_Receipt
 
-```{r, fig2, fig.height = 8, fig.width = 8}
+```{r, fig2, fig.height = 5, fig.width = 7}
 
 # Sort by Total_Receipt and get top 50 candidates
 receipt_data = data[order(-data$Total_Receipt),]
@@ -148,7 +148,7 @@ head(map_data)
 ```
 
 
-```{r, fig2.5, fig.height = 6.2, fig.width = 11}
+```{r, fig2.5, fig.height = 4.2, fig.width = 8}
 ggplot(map_data, aes(long, lat, group = group)) +
   geom_polygon(aes(fill = party_ratio), color = "white") +
     scale_fill_gradient2(limit = c(-1,1),low="blue", mid="white", high="red", 
