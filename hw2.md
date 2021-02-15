@@ -17,8 +17,9 @@ library(lubridate)
 ``` r
 data <- read.csv(file = './data/fec_2008-2022.csv')
 
+# Get rid of variable X from data
 data <- data %>% 
-  select(-c(X))
+  select(-X)
 
 # Column with only numerical and int data type
 num_data <- data %>% 
@@ -108,26 +109,12 @@ num_data$Cash_On_Hand_COP[is.na(num_data$Cash_On_Hand_COP)] <- median(num_data$C
 # Get correlation matrix
 corr <- cor(num_data)
 
+
 # Fill upper triangle to NaN values
 corr[lower.tri(corr)] <- NA
 
 # Melt to one to one dataframe
 corr <- melt(corr)
-
-# corr
-
-# Part for sorting unused
-# group_corr <- corr %>% 
-#   drop_na() %>% 
-#   group_by(Var2) %>% 
-#   summarize(med_value= median(value))
-# 
-# group_corr
-# 
-# corr <- corr %>% 
-#   left_join(group_corr, by="Var2")
-# 
-# corr <- corr[order(corr$med_val, corr$Var2),]
 ```
 
 ``` r
@@ -153,13 +140,13 @@ higher than 0 correlation each other.
 ``` r
 # Sort by Total_Receipt and get top 50 candidates
 receipt_data = data[order(-data$Total_Receipt),]
-receipt_data = receipt_data[0:50,]
+receipt_data = receipt_data[0:40,]
 
 ggplot(receipt_data, aes(x=reorder(Cand_Name,Total_Receipt), y=Total_Receipt/1000000)) +
   geom_point() +
   coord_flip() +
-  theme(text = element_text(size=13, color="black"), axis.text.y=element_text(colour="black"),
-        axis.title=element_text(size=14,face="bold")) +
+  theme(text = element_text(size=11, color="black"), axis.text.y=element_text(colour="black"),
+        axis.title=element_text(size=12)) +
   labs(x="Candidate Name", y="Total Receipt in million dollars")
 ```
 
@@ -250,11 +237,22 @@ democratic 3. More Democratic offices on West and East coast.
 ``` r
 data2 <- data %>% 
   group_by(Cand_Party_Affiliation) %>% 
-  mutate(count=n())
+  summarize(count=n())
+```
+
+    ## `summarise()` ungrouping output (override with `.groups` argument)
+
+``` r
+data2 <- data2 %>% drop_na() %>% 
+  mutate(Cand_Party_Affiliation = ifelse(count <= 30, "Others (113 parties)", data2$Cand_Party_Affiliation))
+
 
 ggplot(data2, aes(x=reorder(Cand_Party_Affiliation, count), y=count)) +
   geom_bar(stat="identity", fill="skyblue") +
-  coord_flip()
+  coord_flip() +
+  labs(x="") +
+  ggtitle("Number of candidates in each party") +
+  theme(text=element_text(size=9), plot.title = element_text(hjust = 0.5))
 ```
 
 ![](hw2_files/figure-gfm/fig3-1.png)<!-- -->
@@ -275,6 +273,12 @@ What we can see:
 Hypothesis: Interest toward US politics increased significantly in 2020
 election.
 
+From the plot of total receipt divided by winner and loser in each year,
+we can see that the total amount of receipt was the highest in 2020.
+This may mean that more people donated their money to candidates in
+2020. We will investigate this by seeing amount of individual
+contributions in each year.
+
 ``` r
 # Extract Year from date
 data$End_Year = year(as.Date(data$Coverage_End_Date, format = "%m/%d/%Y"))
@@ -282,7 +286,7 @@ data$End_Year = year(as.Date(data$Coverage_End_Date, format = "%m/%d/%Y"))
 
 ``` r
 year_cont <- data %>% 
-  select(End_Year, Total_Contribution, Total_Disbursement)
+  select(End_Year, Individual_Contribution)
 
 unique(year_cont$End_Year)
 ```
@@ -301,8 +305,7 @@ year_cont <- year_cont %>% mutate(
 year_cont <- year_cont %>% group_by(End_Year) %>% 
   drop_na() %>% 
   filter(End_Year > 2008 & End_Year < 2021) %>% 
-  summarize(Sum_Contribution = sum(Total_Contribution)/1000000,
-            Sum_Disbursement = sum(Total_Disbursement)/1000000)
+  summarize(Sum_Contribution = sum(Individual_Contribution)/1000000)
 ```
 
     ## `summarise()` ungrouping output (override with `.groups` argument)
@@ -313,25 +316,28 @@ year_cont <- as.data.frame(year_cont)
 head(year_cont)
 ```
 
-    ##   End_Year Sum_Contribution Sum_Disbursement
-    ## 1     2012         4183.073         5060.868
-    ## 2     2016         4061.900         4730.819
-    ## 3     2020         9110.395        10265.873
+    ##   End_Year Sum_Contribution
+    ## 1     2012         3210.289
+    ## 2     2016         3067.413
+    ## 3     2020         6588.269
 
 ``` r
-year_cont <- melt(data=year_cont, id.vars="End_Year", measure.vars=c("Sum_Contribution", "Sum_Disbursement"))
-```
-
-``` r
-ggplot(data=year_cont, aes(x=End_Year, y=value, fill=variable)) +
-  geom_bar(stat="identity", position = "dodge") + 
+ggplot(data=year_cont, aes(x=End_Year, y=Sum_Contribution)) +
+  geom_bar(stat="identity", fill="steelblue") + 
   scale_x_continuous(breaks= c(2012, 2016, 2020)) +
-  labs(x="Year", y="US dollars in One million", fill='Types')
+  labs(x="Year", y="") +
+  ggtitle("Individual Contribution in One million dollars") + 
+  theme(text=element_text(size=9), plot.title = element_text(hjust = 0.5))
 ```
 
-![](hw2_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](hw2_files/figure-gfm/fig6-1.png)<!-- -->
 
-Both 2012 and 2016 doesn’t look that different, but contribution and
-disbursement increased almost two times as much as those in 2012 and
+``` r
+  # scale_fill_discrete(labels="Individual Contribution") +
+  # theme(legend.position=c(0.3, 0.8), legend.background=element_rect(fill="transparent"))
+```
+
+Both 2012 and 2016 doesn’t look that different, but individual
+contribution increased almost two times as much as those in 2012 and
 2016.This shows that public interest toward politics went much higher
-because many people donated their money to candidates.
+because many people donated more money to candidates.
