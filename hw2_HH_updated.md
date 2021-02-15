@@ -132,13 +132,15 @@ df5$result = ifelse (df5$Coverage_End_Date == 2016 & df5$Cand_Party_Affiliation 
 df5$result = ifelse (df5$Coverage_End_Date == 2020 & df5$Cand_Party_Affiliation == "REP", "loser", df5$result)
 df5$result = ifelse (df5$Coverage_End_Date == 2020 & df5$Cand_Party_Affiliation == "DEM", "winner", df5$result)
 
+df5$Total_Receipt = df5$Total_Receipt/ 1000000
+
 ## plot grouped bar based on result
 ggplot(df5, aes(factor(Coverage_End_Date), Total_Receipt, fill = result)) + 
   geom_bar(stat="identity", position = "dodge") + 
   geom_text(aes(label=Cand_Party_Affiliation), vjust=1.6, color="white", position=position_dodge(width=1), size=3.5)+
   scale_fill_brewer(palette = "Set1") + 
   ggtitle("Total_Receipt of final Presidential Candidates form 2008 to 2020") +
-  xlab("Year") + ylab("Total_Receipt")
+  xlab("Year") + ylab("Total_Receipt (in one million dollars")
 ```
 
 ![](hw2_HH_updated_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
@@ -171,12 +173,14 @@ df_donate1 = df_donate1[df_donate1$Coverage_End_Date > 2007,]
 # drop the Others Parties, it's because the other Parties are just a very small part compare to DEM and REP 
 df_donate1 = df_donate1[df_donate1$Cand_Party_Affiliation != "OTHERS",]
 
+df_donate1$Other_Disbursements = df_donate1$Other_Disbursements/ 1000000
+
 ## Plot for donations from Parties
 ggplot(df_donate1, aes(factor(Coverage_End_Date), Other_Disbursements, fill = Cand_Party_Affiliation)) + 
   geom_bar(stat="identity", position = "dodge") + 
   scale_fill_brewer(palette = "Set1") + 
   ggtitle("Donations and contributions from DEM and REP Parties from 2008 to 2020") +
-  xlab("Year") + ylab("Other_disburshments")
+  xlab("Year") + ylab("Other_disburshments in million dollars")
 ```
 
 ![](hw2_HH_updated_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
@@ -249,11 +253,13 @@ df_dem1 <- aggregate(select(df_dem1, "Individual_Unitemized_Contribution", "Indi
 # change dataframe to melt
 df_dem_Melted <- melt(df_dem1, "Coverage_End_Date")
 
+df_dem_Melted$value = df_dem_Melted$value/ 1000000
+
 # Plot
 ggplot(df_dem_Melted, aes(factor(Coverage_End_Date), value, fill = variable)) + 
   geom_bar(stat="identity", position = "dodge") + 
   ggtitle("Two kinds of Individual contribution of DEM within 2020") +
-  xlab("Year") + ylab("Amount")
+  xlab("Year") + ylab("Amount in one million dollars")
 ```
 
 ![](hw2_HH_updated_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
