@@ -140,7 +140,7 @@ ggplot(df5, aes(factor(Coverage_End_Date), Total_Receipt, fill = result)) +
   geom_text(aes(label=Cand_Party_Affiliation), vjust=1.6, color="white", position=position_dodge(width=1), size=3.5)+
   scale_fill_brewer(palette = "Set1") + 
   ggtitle("Total_Receipt of final Presidential Candidates form 2008 to 2020") +
-  xlab("Year") + ylab("Total_Receipt (in one million dollars")
+  xlab("Year") + ylab("Total_Receipt (in one million dollars)")
 ```
 
 ![](hw2_HH_updated_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
