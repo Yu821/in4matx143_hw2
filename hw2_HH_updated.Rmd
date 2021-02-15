@@ -237,11 +237,13 @@ df_part2 = na.omit(df_part2)
 # Sum amounts by year
 df_part2 <- aggregate(select(df_part2, "Total_Receipt"), by= list(df_part2$Coverage_End_Date, df_part2$Cand_Party_Affiliation), sum)
 
+df_part2$Total_Receipt = df_part2$Total_Receipt/1000000
+
 # Plot
 ggplot(df_part2, aes(factor(Group.1), Total_Receipt, fill = Group.2)) + 
   geom_bar(stat="identity", position = "dodge") + 
   ggtitle("Total_receipt of DEM and REP from 2008 to 2020") +
-  xlab("Year") + ylab("Amount") + 
+  xlab("Year") + ylab("Amount in one million dollars") + 
   guides(fill=guide_legend(title="Parties"))
 ```
 
